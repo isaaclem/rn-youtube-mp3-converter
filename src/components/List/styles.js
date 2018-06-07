@@ -2,7 +2,8 @@ import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   row: {
-    paddingHorizontal: 20,
+    
+    width: '70%',
     paddingVertical: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
