@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { FlatList, Image, TouchableWithoutFeedback, View } from 'react-native';
+import { FlatList, Image, TouchableWithoutFeedback } from 'react-native';
 import { connect } from 'react-redux';
 import qs from 'qs';
 import axios from 'axios';
@@ -11,18 +11,21 @@ import {
   Icon, 
   Left, 
   Body, 
-  Right 
+  Right,
+  ActionSheet,
+  Root
 } from 'native-base';
-import Modal from 'react-native-modal';
 
 import { Container } from '../components/Container';
 import { InputWithButton } from '../components/TextInput';
 import { searchVideoSuccess } from '../actions/youtube';
-import { Separator } from '../components/List';
+
+const BUTTONS = ['Convert and download', 'Cancel'];
+const CANCEL_INDEX = 2;
 
 const API_ROOT_URL = 'https://www.googleapis.com/youtube/v3/search?';
 const API_QUERY_PARAMS = {
-  key: 'AIzaSyA3nGzXiIJWtVTQsndzWgBekeJcF4waY6Q',
+  key: '{YOUR_API_KEY}',
   part: 'snippet',
   q: 'Eminem',
   type: 'video',
@@ -40,7 +43,18 @@ class Home extends Component {
   }
 
   toggleModal = () =>
-    this.setState({ isModalVisible: !this.state.isModalVisible });
+    ActionSheet.show(
+      {
+        options: BUTTONS,
+        cancelButtonIndex: CANCEL_INDEX,
+        title: 'Actions'
+      },
+      buttonIndex => {
+        if (buttonIndex === 0) {
+          //TO-DO: Make Another fire call to convert to MP3
+        }
+      },
+    );
 
   handleSearch = async () => {
     const query = qs.stringify({ ...API_QUERY_PARAMS, q: this.state.searchString });
@@ -64,48 +78,44 @@ class Home extends Component {
           style={{ flex: 1, width: '90%' }}
           data={this.props.videoList}
           renderItem={({ item }) => (
-            <TouchableWithoutFeedback onLongPress={this.toggleModal}>
-              <Card style={{ flex: 1 }}>
-                <CardItem style={{ flex: 1 }}>
-                  <Body>
-                    <Text>{item.snippet.title}</Text>
-                    <Text note>{item.snippet.channelTitle}</Text>
-                  </Body>
-                </CardItem>
-                <CardItem cardBody>
-                  <Image 
-                    source={{ uri: item.snippet.thumbnails.default.url }} 
-                    style={{ height: 200, width: null, flex: 1 }}
-                  />
-                </CardItem>
-                <CardItem>
-                  <Left>
-                    <Button transparent>
-                      <Icon active name="thumbs-up" />
-                      <Text>12 Likes</Text>
-                    </Button>
-                  </Left>
-                  <Body>
-                    <Button transparent>
-                      <Icon active name="chatbubbles" />
-                      <Text>4 Comments</Text>
-                    </Button>
-                  </Body>
-                  <Right>
-                    <Text>11h ago</Text>
-                  </Right>
-                </CardItem>
-              </Card>
-            </TouchableWithoutFeedback>
+            <Root>
+              <TouchableWithoutFeedback onLongPress={this.toggleModal}>
+                <Card style={{ flex: 1 }}>
+                  <CardItem style={{ flex: 1 }}>
+                    <Body>
+                      <Text>{item.snippet.title}</Text>
+                      <Text note>{item.snippet.channelTitle}</Text>
+                    </Body>
+                  </CardItem>
+                  <CardItem cardBody>
+                    <Image 
+                      source={{ uri: item.snippet.thumbnails.default.url }} 
+                      style={{ height: 200, width: null, flex: 1 }}
+                    />
+                  </CardItem>
+                  <CardItem>
+                    <Left>
+                      <Button transparent>
+                        <Icon active name="thumbs-up" />
+                        <Text>12 Likes</Text>
+                      </Button>
+                    </Left>
+                    <Body>
+                      <Button transparent>
+                        <Icon active name="chatbubbles" />
+                        <Text>4 Comments</Text>
+                      </Button>
+                    </Body>
+                    <Right>
+                      <Text>11h ago</Text>
+                    </Right>
+                  </CardItem>
+                </Card>
+              </TouchableWithoutFeedback>
+            </Root>
           )}
           keyExtractor={(item) => item.id.videoId.toString()}
-          ItemSeparatorComponent={Separator}
         />
-        <Modal isVisible={this.state.isModalVisible}>
-          <View style={{ flex: 1 }}>
-            <Text>I am the modal content!</Text>
-          </View>
-        </Modal>
       </Container>
     );
   }
