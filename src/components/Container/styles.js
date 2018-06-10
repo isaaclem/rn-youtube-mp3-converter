@@ -3,10 +3,9 @@ import { Constants } from 'expo';
 
 export default StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
     paddingTop: Constants.statusBarHeight,
     backgroundColor: '#f5f5f5',
+    flex: 1,
+    alignItems: 'center'
   }
 });

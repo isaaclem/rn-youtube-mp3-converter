@@ -1,18 +1,32 @@
 import React, { Component } from 'react';
-import { FlatList } from 'react-native';
+import { FlatList, Image, TouchableWithoutFeedback, View } from 'react-native';
 import { connect } from 'react-redux';
+import qs from 'qs';
+import axios from 'axios';
+import {  
+  Card, 
+  CardItem, 
+  Text, 
+  Button, 
+  Icon, 
+  Left, 
+  Body, 
+  Right 
+} from 'native-base';
+import Modal from 'react-native-modal';
 
 import { Container } from '../components/Container';
 import { InputWithButton } from '../components/TextInput';
 import { searchVideoSuccess } from '../actions/youtube';
-import { ListItem, Separator } from '../components/List';
+import { Separator } from '../components/List';
 
 const API_ROOT_URL = 'https://www.googleapis.com/youtube/v3/search?';
 const API_QUERY_PARAMS = {
-  key: 'xxxx',
+  key: 'AIzaSyA3nGzXiIJWtVTQsndzWgBekeJcF4waY6Q',
   part: 'snippet',
-  q: 'rihanna',
-  maxResults: 5
+  q: 'Eminem',
+  type: 'video',
+  maxResults: 20
 };
 
 class Home extends Component {
@@ -20,12 +34,20 @@ class Home extends Component {
     super(props);
 
     this.state = {
-      searchString: ''
+      searchString: '',
+      isModalVisible: false
     };
   }
 
-  handleSearch = () => {
-    this.props.dispatch(searchVideoSuccess(['a', 'b', 'c']));
+  toggleModal = () =>
+    this.setState({ isModalVisible: !this.state.isModalVisible });
+
+  handleSearch = async () => {
+    const query = qs.stringify({ ...API_QUERY_PARAMS, q: this.state.searchString });
+    const url = `${API_ROOT_URL}${query}`;
+    
+    const { data } = await axios.get(url);
+    this.props.dispatch(searchVideoSuccess(data.items));
   }
 
   render() {
@@ -38,20 +60,53 @@ class Home extends Component {
           autoCorrect={false}
           onChangeText={searchString => this.setState({ searchString })}
         />
-        <FlatList
+        <FlatList 
+          style={{ flex: 1, width: '90%' }}
           data={this.props.videoList}
           renderItem={({ item }) => (
-            <ListItem 
-              text={item.item} 
-              selected={item === 'wa'}
-              onPress={(item) => { console.log(item)}}
-            />
+            <TouchableWithoutFeedback onLongPress={this.toggleModal}>
+              <Card style={{ flex: 1 }}>
+                <CardItem style={{ flex: 1 }}>
+                  <Body>
+                    <Text>{item.snippet.title}</Text>
+                    <Text note>{item.snippet.channelTitle}</Text>
+                  </Body>
+                </CardItem>
+                <CardItem cardBody>
+                  <Image 
+                    source={{ uri: item.snippet.thumbnails.default.url }} 
+                    style={{ height: 200, width: null, flex: 1 }}
+                  />
+                </CardItem>
+                <CardItem>
+                  <Left>
+                    <Button transparent>
+                      <Icon active name="thumbs-up" />
+                      <Text>12 Likes</Text>
+                    </Button>
+                  </Left>
+                  <Body>
+                    <Button transparent>
+                      <Icon active name="chatbubbles" />
+                      <Text>4 Comments</Text>
+                    </Button>
+                  </Body>
+                  <Right>
+                    <Text>11h ago</Text>
+                  </Right>
+                </CardItem>
+              </Card>
+            </TouchableWithoutFeedback>
           )}
-          keyExtractor={(item) => item}
+          keyExtractor={(item) => item.id.videoId.toString()}
           ItemSeparatorComponent={Separator}
         />
+        <Modal isVisible={this.state.isModalVisible}>
+          <View style={{ flex: 1 }}>
+            <Text>I am the modal content!</Text>
+          </View>
+        </Modal>
       </Container>
-      
     );
   }
 }
