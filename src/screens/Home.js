@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { FlatList, Image, TouchableWithoutFeedback } from 'react-native';
+import { FlatList, Image, TouchableWithoutFeedback, Linking } from 'react-native';
 import { connect } from 'react-redux';
 import qs from 'qs';
 import axios from 'axios';
@@ -19,13 +19,15 @@ import {
 import { Container } from '../components/Container';
 import { InputWithButton } from '../components/TextInput';
 import { searchVideoSuccess } from '../actions/youtube';
+import { YOUTUBE_API_KEY } from '../config/config';
 
 const BUTTONS = ['Convert and download', 'Cancel'];
 const CANCEL_INDEX = 2;
 
+const CONVERT_API_ROOT_URL = 'https://youtube7.download/mini.php?id=';
 const API_ROOT_URL = 'https://www.googleapis.com/youtube/v3/search?';
 const API_QUERY_PARAMS = {
-  key: '{YOUR_API_KEY}',
+  key: YOUTUBE_API_KEY,
   part: 'snippet',
   q: 'Eminem',
   type: 'video',
@@ -42,7 +44,7 @@ class Home extends Component {
     };
   }
 
-  toggleModal = () =>
+  toggleModal = item =>
     ActionSheet.show(
       {
         options: BUTTONS,
@@ -51,7 +53,10 @@ class Home extends Component {
       },
       buttonIndex => {
         if (buttonIndex === 0) {
-          //TO-DO: Make Another fire call to convert to MP3
+          const vid = item.id.videoId;
+          const url = `${CONVERT_API_ROOT_URL}${vid}`;
+    
+          Linking.openURL(url);
         }
       },
     );
@@ -79,7 +84,7 @@ class Home extends Component {
           data={this.props.videoList}
           renderItem={({ item }) => (
             <Root>
-              <TouchableWithoutFeedback onLongPress={this.toggleModal}>
+              <TouchableWithoutFeedback onLongPress={() => this.toggleModal(item)}>
                 <Card style={{ flex: 1 }}>
                   <CardItem style={{ flex: 1 }}>
                     <Body>
