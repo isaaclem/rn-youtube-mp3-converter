@@ -3,14 +3,14 @@ import { FlatList, Image, TouchableWithoutFeedback, Linking } from 'react-native
 import { connect } from 'react-redux';
 import qs from 'qs';
 import axios from 'axios';
-import {  
-  Card, 
-  CardItem, 
-  Text, 
-  Button, 
-  Icon, 
-  Left, 
-  Body, 
+import {
+  Card,
+  CardItem,
+  Text,
+  Button,
+  Icon,
+  Left,
+  Body,
   Right,
   ActionSheet,
   Root
@@ -22,9 +22,15 @@ import { searchVideoSuccess } from '../actions/youtube';
 import { YOUTUBE_API_KEY } from '../config/config';
 
 const BUTTONS = ['Convert and download', 'Cancel'];
-const CANCEL_INDEX = 2;
+const CANCEL_INDEX = 1;
 
 const CONVERT_API_ROOT_URL = 'https://youtube7.download/mini.php?id=';
+const INDIVIDUAL_API_ROOT_URL = 'https://www.googleapis.com/youtube/v3/videos?'
+const INDIVIDUAL_API_QUERY_PARAMS = {
+  key: YOUTUBE_API_KEY,
+  part: 'statistics',
+  id: ''
+}
 const API_ROOT_URL = 'https://www.googleapis.com/youtube/v3/search?';
 const API_QUERY_PARAMS = {
   key: YOUTUBE_API_KEY,
@@ -55,7 +61,7 @@ class Home extends Component {
         if (buttonIndex === 0) {
           const vid = item.id.videoId;
           const url = `${CONVERT_API_ROOT_URL}${vid}`;
-    
+
           Linking.openURL(url);
         }
       },
@@ -64,22 +70,33 @@ class Home extends Component {
   handleSearch = async () => {
     const query = qs.stringify({ ...API_QUERY_PARAMS, q: this.state.searchString });
     const url = `${API_ROOT_URL}${query}`;
-    
+
     const { data } = await axios.get(url);
+
+    await Promise.all(data.items.map(async vid => {
+      let id = vid.id.videoId;
+      const individualQuery = qs.stringify({ ...INDIVIDUAL_API_QUERY_PARAMS, id  });
+      //API_QUERY_PARAMS
+      const individualURL = `${INDIVIDUAL_API_ROOT_URL}${individualQuery}`;
+
+      const { data } = await axios.get(individualURL);
+      vid.statistics = data.items[0].statistics
+    }))
+
     this.props.dispatch(searchVideoSuccess(data.items));
   }
 
   render() {
     return (
       <Container>
-        <InputWithButton 
+        <InputWithButton
           onPress={this.handleSearch}
           placeholder='Search'
           autoCapitalize="none"
           autoCorrect={false}
           onChangeText={searchString => this.setState({ searchString })}
         />
-        <FlatList 
+        <FlatList
           style={{ flex: 1, width: '90%' }}
           data={this.props.videoList}
           renderItem={({ item }) => (
@@ -93,8 +110,8 @@ class Home extends Component {
                     </Body>
                   </CardItem>
                   <CardItem cardBody>
-                    <Image 
-                      source={{ uri: item.snippet.thumbnails.default.url }} 
+                    <Image
+                      source={{ uri: item.snippet.thumbnails.default.url }}
                       style={{ height: 200, width: null, flex: 1 }}
                     />
                   </CardItem>
@@ -102,7 +119,7 @@ class Home extends Component {
                     <Left>
                       <Button transparent>
                         <Icon active name="thumbs-up" />
-                        <Text>12 Likes</Text>
+                        <Text>{item.statistics.likeCount}</Text>
                       </Button>
                     </Left>
                     <Body>
