@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { FlatList, Image, TouchableWithoutFeedback, Linking } from 'react-native';
+import { FlatList, Image, TouchableWithoutFeedback, Linking, TouchableOpacity } from 'react-native';
 import { connect } from 'react-redux';
 import qs from 'qs';
 import axios from 'axios';
@@ -50,6 +50,13 @@ class Home extends Component {
     };
   }
 
+  downloadVideo = item => {
+    let vid = item.id.videoId;
+    const url = `${CONVERT_API_ROOT_URL}${vid}`
+
+    Linking.openURL(url);
+  }
+
   toggleModal = item =>
     ActionSheet.show(
       {
@@ -59,10 +66,7 @@ class Home extends Component {
       },
       buttonIndex => {
         if (buttonIndex === 0) {
-          const vid = item.id.videoId;
-          const url = `${CONVERT_API_ROOT_URL}${vid}`;
-
-          Linking.openURL(url);
+          this.downloadVideo(item);
         }
       },
     );
@@ -118,18 +122,23 @@ class Home extends Component {
                   <CardItem>
                     <Left>
                       <Button transparent>
-                        <Icon active name="thumbs-up" />
-                        <Text>{item.statistics.likeCount}</Text>
+                        <Icon type="EvilIcons" active name="like" />
+                        <Text>{item.statistics.likeCount || 0}</Text>
                       </Button>
                     </Left>
                     <Body>
                       <Button transparent>
-                        <Icon active name="chatbubbles" />
-                        <Text>4 Comments</Text>
+                        <Icon type="EvilIcons" active name="comment" />
+                        <Text>{item.statistics.commentCount || 0}</Text>
                       </Button>
                     </Body>
                     <Right>
-                      <Text>11h ago</Text>
+                      <TouchableOpacity
+                        style={{ alignItems: 'center', backgroundColor: '#DDDDDD', padding: 5}}
+                        onPress={() =>this.downloadVideo(item)}
+                      >
+                        <Text> Download </Text>
+                      </TouchableOpacity>
                     </Right>
                   </CardItem>
                 </Card>
