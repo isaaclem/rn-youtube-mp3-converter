@@ -1,5 +1,12 @@
 import React, { Component } from 'react';
-import { FlatList, Image, TouchableWithoutFeedback, Linking, TouchableOpacity, WebView } from 'react-native';
+import { 
+  FlatList, 
+  TouchableWithoutFeedback, 
+  Linking, 
+  TouchableOpacity, 
+  WebView,
+  Keyboard
+} from 'react-native';
 import { connect } from 'react-redux';
 import qs from 'qs';
 import axios from 'axios';
@@ -13,7 +20,8 @@ import {
   Body,
   Right,
   ActionSheet,
-  Root
+  Root,
+  Spinner
 } from 'native-base';
 
 import { Container } from '../components/Container';
@@ -25,12 +33,12 @@ const BUTTONS = ['Convert and download', 'Cancel'];
 const CANCEL_INDEX = 1;
 
 const CONVERT_API_ROOT_URL = 'https://youtube7.download/mini.php?id=';
-const INDIVIDUAL_API_ROOT_URL = 'https://www.googleapis.com/youtube/v3/videos?'
+const INDIVIDUAL_API_ROOT_URL = 'https://www.googleapis.com/youtube/v3/videos?';
 const INDIVIDUAL_API_QUERY_PARAMS = {
   key: YOUTUBE_API_KEY,
   part: 'statistics',
   id: ''
-}
+};
 const API_ROOT_URL = 'https://www.googleapis.com/youtube/v3/search?';
 const API_QUERY_PARAMS = {
   key: YOUTUBE_API_KEY,
@@ -51,8 +59,8 @@ class Home extends Component {
   }
 
   downloadVideo = item => {
-    let vid = item.id.videoId;
-    const url = `${CONVERT_API_ROOT_URL}${vid}`
+    const vid = item.id.videoId;
+    const url = `${CONVERT_API_ROOT_URL}${vid}`;
 
     Linking.openURL(url);
   }
@@ -72,20 +80,21 @@ class Home extends Component {
     );
 
   handleSearch = async () => {
+    Keyboard.dismiss();
     const query = qs.stringify({ ...API_QUERY_PARAMS, q: this.state.searchString });
     const url = `${API_ROOT_URL}${query}`;
 
     const { data } = await axios.get(url);
 
     await Promise.all(data.items.map(async vid => {
-      let id = vid.id.videoId;
-      const individualQuery = qs.stringify({ ...INDIVIDUAL_API_QUERY_PARAMS, id  });
-      //API_QUERY_PARAMS
+      const id = vid.id.videoId;
+      const individualQuery = qs.stringify({ ...INDIVIDUAL_API_QUERY_PARAMS, id });
+      
       const individualURL = `${INDIVIDUAL_API_ROOT_URL}${individualQuery}`;
 
-      const { data } = await axios.get(individualURL);
-      vid.statistics = data.items[0].statistics
-    }))
+      const { data: indiData } = await axios.get(individualURL);
+      vid.statistics = indiData.items[0].statistics;
+    }));
 
     this.props.dispatch(searchVideoSuccess(data.items));
   }
@@ -115,11 +124,12 @@ class Home extends Component {
                   </CardItem>
                   <CardItem cardBody>
                     <WebView
-                     source={{uri: `https://www.youtube.com/embed/${item.id.videoId}?controls=0`}}
-                     style={{flex: 1, width: null, height: 200}}
-                     allowsInlineMediaPlayback
-                     scrollEnabled={false}
-                   />
+                      source={{ uri: `https://www.youtube.com/watch?v=${item.id.videoId}` }}
+                      style={{ flex: 1, width: null, height: 200 }}
+                      allowsInlineMediaPlayback
+                      scrollEnabled={false}
+                      javaScriptEnabled
+                    />
                   </CardItem>
                   <CardItem>
                     <Left>
@@ -136,8 +146,8 @@ class Home extends Component {
                     </Body>
                     <Right>
                       <TouchableOpacity
-                        style={{ alignItems: 'center', backgroundColor: '#ada19f', padding: 5}}
-                        onPress={() =>this.downloadVideo(item)}
+                        style={{ alignItems: 'center', backgroundColor: '#ada19f', padding: 5 }}
+                        onPress={() => this.downloadVideo(item)}
                       >
                         <Text> Download </Text>
                       </TouchableOpacity>
