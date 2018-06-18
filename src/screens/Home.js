@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { FlatList, Image, TouchableWithoutFeedback, Linking, TouchableOpacity } from 'react-native';
+import { FlatList, Image, TouchableWithoutFeedback, Linking, TouchableOpacity, WebView } from 'react-native';
 import { connect } from 'react-redux';
 import qs from 'qs';
 import axios from 'axios';
@@ -114,10 +114,12 @@ class Home extends Component {
                     </Body>
                   </CardItem>
                   <CardItem cardBody>
-                    <Image
-                      source={{ uri: item.snippet.thumbnails.default.url }}
-                      style={{ height: 200, width: null, flex: 1 }}
-                    />
+                    <WebView
+                     source={{uri: `https://www.youtube.com/embed/${item.id.videoId}?controls=0`}}
+                     style={{flex: 1, width: null, height: 200}}
+                     allowsInlineMediaPlayback
+                     scrollEnabled={false}
+                   />
                   </CardItem>
                   <CardItem>
                     <Left>
@@ -134,7 +136,7 @@ class Home extends Component {
                     </Body>
                     <Right>
                       <TouchableOpacity
-                        style={{ alignItems: 'center', backgroundColor: '#DDDDDD', padding: 5}}
+                        style={{ alignItems: 'center', backgroundColor: '#ada19f', padding: 5}}
                         onPress={() =>this.downloadVideo(item)}
                       >
                         <Text> Download </Text>

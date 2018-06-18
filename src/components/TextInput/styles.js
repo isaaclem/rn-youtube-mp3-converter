@@ -17,7 +17,7 @@ export default StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 1
-    
+
   },
   containerDisabled: {
     backgroundColor: '#F0F0F0'
@@ -26,7 +26,7 @@ export default StyleSheet.create({
     height: INPUT_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ff0000',
+    backgroundColor: '#d61818',
     borderTopRightRadius: BORDER_RADIUS,
     borderBottomRightRadius: BORDER_RADIUS
   },
